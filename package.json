@@ -1,0 +1,29 @@
+{
+  "name": "doctorly-server",
+  "version": "1.0.0",
+  "description": "This is my server for my doctorly website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "node.js",
+    "express.js",
+    "mongobd",
+    "mongoose",
+    "cors",
+    "dotenv"
+  ],
+  "author": "kazi arman nihad",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongobd": "^0.0.1-security.0",
+    "mongodb": "^7.5.0",
+    "mongoose": "^9.9.2",
+    "nodemon": "^3.1.14"
+  }
+}
