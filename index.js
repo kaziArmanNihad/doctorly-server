@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv") ;
+const dotenv = require("dotenv");
 
 // Configs
 dotenv.config();
@@ -9,7 +9,8 @@ const PORT = process.env.PORT || 5001;
 
 // Route Paths
 const connectDB = require("./src/config/db.js");
-const homeRoute = require("./src/routers/homeRoute.js");
+const homeRoute = require("./src/routers/home.route.js");
+const userRoute = require("./src/routers/user.route.js");
 
 // Middlewares
 app.use(
@@ -17,16 +18,14 @@ app.use(
     origin: ["http://localhost:3000"],
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // All Routers
-app.use("/", homeRoute);
-
-
+app.use("/api", homeRoute);
+app.use("/api/user", userRoute);
 
 // Start server
 const startServer = async () => {
@@ -36,7 +35,7 @@ const startServer = async () => {
       console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error("Failed to start server:", error);
     process.exit(1);
   }
 };
