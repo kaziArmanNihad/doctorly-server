@@ -7,10 +7,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Route Paths
+// Route + Db Paths
 const connectDB = require("./src/config/db.js");
 const homeRoute = require("./src/routers/home.route.js");
 const userRoute = require("./src/routers/user.route.js");
+const doctorRoute = require("./src/routers/doctor.route.js");
+const patientRoute = require("./src/routers/patient.route.js");
 
 // Middlewares
 app.use(
@@ -26,6 +28,8 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 // All Routers
 app.use("/api", homeRoute);
 app.use("/api/user", userRoute);
+app.use("/api/doctor", doctorRoute);
+app.use("/api/patient", patientRoute);
 
 // Start server
 const startServer = async () => {
