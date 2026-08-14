@@ -27,9 +27,9 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // All Routers
 app.use("/api", homeRoute);
-app.use("/api/user", userRoute);
-app.use("/api/doctor", doctorRoute);
-app.use("/api/patient", patientRoute);
+app.use("/api/users", userRoute);
+app.use("/api/doctors", doctorRoute);
+app.use("/api/patients", patientRoute);
 
 // Start server
 const startServer = async () => {

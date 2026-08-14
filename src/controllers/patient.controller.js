@@ -1,8 +1,7 @@
-const Patient = require("../models/Patient");
-const Doctor = require("../models/Doctor");
+const Patient = require("../models/patient.model");
+const Doctor = require("../models/doctor.model");
 
-// @desc    Create a patient
-// @route   POST /patients
+
 const createPatient = async (req, res) => {
   try {
     const { name, age, gender, condition, phone, email, doctor } = req.body;
@@ -46,41 +45,66 @@ const getPatients = async (req, res) => {
 
     const filter = {};
 
+    // Search
     if (search) {
       const regex = new RegExp(search, "i");
-      filter.$or = [{ name: regex }, { condition: regex }];
+
+      filter.$or = [
+        { name: regex },
+        { condition: regex },
+      ];
     }
 
+    // Condition filter
     if (condition) {
       filter.condition = condition;
     }
 
+    // Doctor filter
     if (doctor) {
       filter.doctor = doctor;
     }
 
+    // Date filter
     if (startDate || endDate) {
       filter.createdAt = {};
-      if (startDate) filter.createdAt.$gte = new Date(startDate);
+
+      if (startDate) {
+        filter.createdAt.$gte = new Date(startDate);
+      }
+
       if (endDate) {
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
+
         filter.createdAt.$lte = end;
       }
     }
 
-    const pageNum = Math.max(parseInt(page), 1);
-    const limitNum = Math.max(parseInt(limit), 1);
-    const skip = (pageNum - 1) * limitNum;
+    // Pagination
+    const pageNum = Math.max(
+      parseInt(page, 10),
+      1
+    );
 
-    const [patients, total] = await Promise.all([
-      Patient.find(filter)
-        .populate("doctor", "name specialization hospital")
-        .sort("-createdAt")
-        .skip(skip)
-        .limit(limitNum),
-      Patient.countDocuments(filter),
-    ]);
+    const limitNum = Math.max(
+      parseInt(limit, 10),
+      1
+    );
+
+    const skip =
+      (pageNum - 1) * limitNum;
+
+    // Fetch patients + total count
+    const [patients, total] =
+      await Promise.all([
+        Patient.find(filter)
+          .sort("-createdAt")
+          .skip(skip)
+          .limit(limitNum),
+
+        Patient.countDocuments(filter),
+      ]);
 
     res.status(200).json({
       success: true,
@@ -89,11 +113,15 @@ const getPatients = async (req, res) => {
         total,
         page: pageNum,
         limit: limitNum,
-        totalPages: Math.ceil(total / limitNum) || 1,
+        totalPages:
+          Math.ceil(total / limitNum) || 1,
       },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 

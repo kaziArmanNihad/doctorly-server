@@ -1,5 +1,5 @@
-const Doctor = require("../models/Doctor");
-const Patient = require("../models/Patient");
+const Doctor = require("../models/doctor.model");
+const Patient = require("../models/patient.model");
 
 // @desc    Create a doctor
 // @route   POST /doctors
