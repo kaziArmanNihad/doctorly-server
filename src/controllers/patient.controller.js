@@ -1,7 +1,6 @@
 const Patient = require("../models/patient.model");
 const Doctor = require("../models/doctor.model");
 
-
 const createPatient = async (req, res) => {
   try {
     const { name, age, gender, condition, phone, email, doctor } = req.body;
@@ -49,10 +48,7 @@ const getPatients = async (req, res) => {
     if (search) {
       const regex = new RegExp(search, "i");
 
-      filter.$or = [
-        { name: regex },
-        { condition: regex },
-      ];
+      filter.$or = [{ name: regex }, { condition: regex }];
     }
 
     // Condition filter
@@ -82,29 +78,18 @@ const getPatients = async (req, res) => {
     }
 
     // Pagination
-    const pageNum = Math.max(
-      parseInt(page, 10),
-      1
-    );
+    const pageNum = Math.max(parseInt(page, 10), 1);
 
-    const limitNum = Math.max(
-      parseInt(limit, 10),
-      1
-    );
+    const limitNum = Math.max(parseInt(limit, 10), 1);
 
-    const skip =
-      (pageNum - 1) * limitNum;
+    const skip = (pageNum - 1) * limitNum;
 
     // Fetch patients + total count
-    const [patients, total] =
-      await Promise.all([
-        Patient.find(filter)
-          .sort("-createdAt")
-          .skip(skip)
-          .limit(limitNum),
+    const [patients, total] = await Promise.all([
+      Patient.find(filter).sort("-createdAt").skip(skip).limit(limitNum),
 
-        Patient.countDocuments(filter),
-      ]);
+      Patient.countDocuments(filter),
+    ]);
 
     res.status(200).json({
       success: true,
@@ -113,8 +98,7 @@ const getPatients = async (req, res) => {
         total,
         page: pageNum,
         limit: limitNum,
-        totalPages:
-          Math.ceil(total / limitNum) || 1,
+        totalPages: Math.ceil(total / limitNum) || 1,
       },
     });
   } catch (error) {

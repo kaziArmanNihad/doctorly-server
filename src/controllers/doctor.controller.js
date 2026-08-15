@@ -1,5 +1,6 @@
 const Doctor = require("../models/doctor.model");
 const Patient = require("../models/patient.model");
+const mongoose = require("mongoose");
 
 // @desc    Create a doctor
 // @route   POST /doctors
@@ -63,8 +64,29 @@ const getDoctors = async (req, res) => {
     const limitNum = Math.max(parseInt(limit), 1);
     const skip = (pageNum - 1) * limitNum;
 
+    // Instead of populate("patients") — which reads a stale/never-updated
+    // array field on Doctor — aggregate the real Patient collection so
+    // patientCount always reflects reality.
     const [doctors, total] = await Promise.all([
-      Doctor.find(filter).sort("-createdAt").skip(skip).limit(limitNum),
+      Doctor.aggregate([
+        { $match: filter },
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limitNum },
+        {
+          $lookup: {
+            from: "patients", // must match the actual MongoDB collection name for Patient
+            localField: "_id",
+            foreignField: "doctor",
+            as: "patients",
+          },
+        },
+        {
+          $addFields: {
+            patientCount: { $size: "$patients" },
+          },
+        },
+      ]),
       Doctor.countDocuments(filter),
     ]);
 
@@ -87,7 +109,8 @@ const getDoctors = async (req, res) => {
 // @route   GET /doctors/:id
 const getDoctor = async (req, res) => {
   try {
-    const doctor = await Doctor.findById(req.params.id);
+    const { _id } = req.params;
+    const doctor = await Doctor.findById(_id);
 
     if (!doctor) {
       return res
@@ -99,7 +122,10 @@ const getDoctor = async (req, res) => {
       "-createdAt",
     );
 
-    res.status(200).json({ success: true, data: { doctor, patients } });
+    res.status(200).json({
+      success: true,
+      data: { doctor, patients, patientCount: patients.length },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
