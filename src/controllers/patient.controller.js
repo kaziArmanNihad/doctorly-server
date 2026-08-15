@@ -5,13 +5,6 @@ const createPatient = async (req, res) => {
   try {
     const { name, age, gender, condition, phone, email, doctor } = req.body;
 
-    const doctorExists = await Doctor.findById(doctor);
-    if (!doctorExists) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Doctor does not exist" });
-    }
-
     const patient = await Patient.create({
       name,
       age,
@@ -21,6 +14,7 @@ const createPatient = async (req, res) => {
       email,
       doctor,
     });
+    console.log(patient, "patient");
 
     res.status(201).json({ success: true, data: patient });
   } catch (error) {
