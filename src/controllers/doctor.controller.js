@@ -73,23 +73,11 @@ const getDoctors = async (req, res) => {
         { $sort: { createdAt: -1 } },
         { $skip: skip },
         { $limit: limitNum },
-        {
-          $lookup: {
-            from: "patients", // must match the actual MongoDB collection name for Patient
-            localField: "_id",
-            foreignField: "doctor",
-            as: "patients",
-          },
-        },
-        {
-          $addFields: {
-            patientCount: { $size: "$patients" },
-          },
-        },
       ]),
       Doctor.countDocuments(filter),
     ]);
 
+    console.log(doctors);
     res.status(200).json({
       success: true,
       data: doctors,
@@ -109,13 +97,13 @@ const getDoctors = async (req, res) => {
 // @route   GET /doctors/:id
 const getDoctor = async (req, res) => {
   try {
-    const { _id } = req.params;
-    const doctor = await Doctor.findById(_id);
+    const { id } = req.params;
+    const doctor = await Doctor.findById({ _id: id });
 
     if (!doctor) {
       return res
         .status(404)
-        .json({ success: false, message: "Doctor not found" });
+        .json({ success: false, message: "Doctor not found!" });
     }
 
     const patients = await Patient.find({ doctor: doctor._id }).sort(

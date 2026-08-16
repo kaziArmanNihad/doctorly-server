@@ -1,9 +1,19 @@
 const Patient = require("../models/patient.model");
 const Doctor = require("../models/doctor.model");
+const { default: mongoose } = require("mongoose");
 
 const createPatient = async (req, res) => {
   try {
     const { name, age, gender, condition, phone, email, doctor } = req.body;
+
+    const doctorExists = await Doctor.findById(doctor);
+
+    if (!doctorExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found",
+      });
+    }
 
     const patient = await Patient.create({
       name,
@@ -14,11 +24,29 @@ const createPatient = async (req, res) => {
       email,
       doctor,
     });
-    console.log(patient, "patient");
 
-    res.status(201).json({ success: true, data: patient });
+    // Update the doctor's patient list and patient count
+    doctorExists[0].patients.push(patient._id);
+    doctorExists[0].patientCount = doctorExists[0].patientCount + 1;
+    await doctorExists[0].save();
+
+    // Return patient with doctor populated
+    // const populatedPatient = await Patient.findById(patient._id).populate(
+    //   "doctor",
+    //   "name specialization hospital",
+    // );
+
+    res.status(201).json({
+      success: true,
+      data: patient,
+    });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    console.error(error);
+
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -128,7 +156,8 @@ const getPatient = async (req, res) => {
 // @route   PUT/PATCH /patients/:id
 const updatePatient = async (req, res) => {
   try {
-    const patient = await Patient.findByIdAndUpdate(req.params.id, req.body, {
+    const id = req.params.id;
+    const patient = await Patient.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
     }).populate("doctor", "name specialization hospital");

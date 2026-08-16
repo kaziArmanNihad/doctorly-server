@@ -5,6 +5,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const doctorSchema = new mongoose.Schema(
   {
+    _id: { type: String, optional: true },
     name: {
       type: String,
       required: [true, "Doctor name is required"],
@@ -61,20 +62,6 @@ const doctorSchema = new mongoose.Schema(
 doctorSchema.index({ name: "text", specialization: "text", hospital: "text" }); // search
 doctorSchema.index({ createdAt: -1 }); // date-wise filter/sort
 doctorSchema.index({ specialization: 1, createdAt: -1 }); // filter + sort combo
-
-// Virtual populate: no need to store patient ids on the doctor doc
-doctorSchema.virtual("patients", {
-  ref: "Patient",
-  localField: "_id",
-  foreignField: "doctor",
-});
-
-doctorSchema.virtual("patientCount", {
-  ref: "Patient",
-  localField: "_id",
-  foreignField: "doctor",
-  count: true,
-});
 
 const Doctor = mongoose.models.Doctor || mongoose.model("Doctor", doctorSchema);
 
