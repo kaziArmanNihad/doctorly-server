@@ -77,7 +77,6 @@ const getDoctors = async (req, res) => {
       Doctor.countDocuments(filter),
     ]);
 
-    console.log(doctors);
     res.status(200).json({
       success: true,
       data: doctors,
@@ -112,7 +111,7 @@ const getDoctor = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: { doctor, patients, patientCount: patients.length },
+      data: { doctor, patients },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

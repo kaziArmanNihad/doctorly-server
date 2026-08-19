@@ -1,11 +1,11 @@
 const Patient = require("../models/patient.model");
 const Doctor = require("../models/doctor.model");
-const { default: mongoose } = require("mongoose");
 
 const createPatient = async (req, res) => {
   try {
     const { name, age, gender, condition, phone, email, doctor } = req.body;
 
+    // Doctor _id is a String, so don't convert it to ObjectId
     const doctorExists = await Doctor.findById(doctor);
 
     if (!doctorExists) {
@@ -15,6 +15,7 @@ const createPatient = async (req, res) => {
       });
     }
 
+    // Create patient
     const patient = await Patient.create({
       name,
       age,
@@ -22,28 +23,22 @@ const createPatient = async (req, res) => {
       condition,
       phone,
       email,
-      doctor,
+      doctor: doctorExists._id,
     });
 
-    // Update the doctor's patient list and patient count
-    doctorExists[0].patients.push(patient._id);
-    doctorExists[0].patientCount = doctorExists[0].patientCount + 1;
-    await doctorExists[0].save();
+    // Add patient to doctor's patient list
+    doctorExists.patients.push(patient._id);
 
-    // Return patient with doctor populated
-    // const populatedPatient = await Patient.findById(patient._id).populate(
-    //   "doctor",
-    //   "name specialization hospital",
-    // );
+    await doctorExists.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: patient,
     });
   } catch (error) {
     console.error(error);
 
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -177,19 +172,21 @@ const updatePatient = async (req, res) => {
 // @desc    Delete a patient
 // @route   DELETE /patients/:id
 const deletePatient = async (req, res) => {
-  try {
-    const patient = await Patient.findByIdAndDelete(req.params.id);
+  const id = req.params.id;
+  console.log(id, "patient id to delete");
+  // try {
+  //   const patient = await Patient.findByIdAndDelete(id);
 
-    if (!patient) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Patient not found" });
-    }
+  //   if (!patient) {
+  //     return res
+  //       .status(404)
+  //       .json({ success: false, message: "Patient not found" });
+  //   }
 
-    res.status(200).json({ success: true, message: "Patient deleted" });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+  //   res.status(200).json({ success: true, message: "Patient deleted" });
+  // } catch (error) {
+  //   res.status(500).json({ success: false, message: error.message });
+  // }
 };
 
 module.exports = {

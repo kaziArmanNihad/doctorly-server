@@ -5,7 +5,6 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const doctorSchema = new mongoose.Schema(
   {
-    _id: { type: String, optional: true },
     name: {
       type: String,
       required: [true, "Doctor name is required"],
@@ -46,6 +45,12 @@ const doctorSchema = new mongoose.Schema(
         message: (props) => `${props.value} is not a valid email address`,
       },
     },
+    patients: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Patient",
+      },
+    ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
