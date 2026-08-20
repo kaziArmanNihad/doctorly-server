@@ -45,8 +45,6 @@ const createPatient = async (req, res) => {
   }
 };
 
-// @desc    Get all patients (search, filter, date-range, pagination)
-// @route   GET /patients?search=&condition=&doctor=&startDate=&endDate=&page=&limit=
 const getPatients = async (req, res) => {
   try {
     const {
@@ -126,8 +124,6 @@ const getPatients = async (req, res) => {
   }
 };
 
-// @desc    Get single patient
-// @route   GET /patients/:id
 const getPatient = async (req, res) => {
   try {
     const patient = await Patient.findById(req.params.id).populate(
@@ -147,8 +143,6 @@ const getPatient = async (req, res) => {
   }
 };
 
-// @desc    Update a patient
-// @route   PUT/PATCH /patients/:id
 const updatePatient = async (req, res) => {
   try {
     const id = req.params.id;
@@ -169,24 +163,44 @@ const updatePatient = async (req, res) => {
   }
 };
 
-// @desc    Delete a patient
-// @route   DELETE /patients/:id
 const deletePatient = async (req, res) => {
   const id = req.params.id;
-  console.log(id, "patient id to delete");
-  // try {
-  //   const patient = await Patient.findByIdAndDelete(id);
+  try {
+    // deleting patient from doctor.patients array
+    const patientToDelete = await Patient.findById(id);
 
-  //   if (!patient) {
-  //     return res
-  //       .status(404)
-  //       .json({ success: false, message: "Patient not found" });
-  //   }
+    if (!patientToDelete) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Patient not found" });
+    }
 
-  //   res.status(200).json({ success: true, message: "Patient deleted" });
-  // } catch (error) {
-  //   res.status(500).json({ success: false, message: error.message });
-  // }
+    const doctorId = patientToDelete.doctor;
+
+    const doctor = await Doctor.findById(doctorId);
+
+    if (!doctor) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Doctor not found" });
+    }
+
+    doctor.patients.pull(patientToDelete._id);
+    await doctor.save();
+
+    // deleting patient from Patient collection
+    const patient = await Patient.findByIdAndDelete(id);
+
+    if (!patient) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Patient not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Patient deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 module.exports = {

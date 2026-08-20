@@ -2,8 +2,6 @@ const Doctor = require("../models/doctor.model");
 const Patient = require("../models/patient.model");
 const mongoose = require("mongoose");
 
-// @desc    Create a doctor
-// @route   POST /doctors
 const createDoctor = async (req, res) => {
   try {
     const { name, specialization, hospital, phone, email } = req.body;
@@ -22,8 +20,6 @@ const createDoctor = async (req, res) => {
   }
 };
 
-// @desc    Get all doctors (search, filter, date-range, pagination)
-// @route   GET /doctors?search=&specialization=&startDate=&endDate=&page=&limit=
 const getDoctors = async (req, res) => {
   try {
     const {
@@ -92,8 +88,6 @@ const getDoctors = async (req, res) => {
   }
 };
 
-// @desc    Get single doctor with their patients
-// @route   GET /doctors/:id
 const getDoctor = async (req, res) => {
   try {
     const { id } = req.params;
@@ -118,8 +112,6 @@ const getDoctor = async (req, res) => {
   }
 };
 
-// @desc    Update a doctor
-// @route   PUT/PATCH /doctors/:id
 const updateDoctor = async (req, res) => {
   try {
     const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
@@ -139,8 +131,6 @@ const updateDoctor = async (req, res) => {
   }
 };
 
-// @desc    Delete a doctor (and their patients)
-// @route   DELETE /doctors/:id
 const deleteDoctor = async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.params.id);
