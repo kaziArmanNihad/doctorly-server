@@ -5,7 +5,6 @@ const createPatient = async (req, res) => {
   try {
     const { name, age, gender, condition, phone, email, doctor } = req.body;
 
-    // Doctor _id is a String, so don't convert it to ObjectId
     const doctorExists = await Doctor.findById(doctor);
 
     if (!doctorExists) {
@@ -44,6 +43,107 @@ const createPatient = async (req, res) => {
     });
   }
 };
+
+//  using bulk insertMany to create multiple patients at once
+
+// const extractId = (value) => {
+//   if (!value) return value;
+//   if (typeof value === "string") return value;
+//   if (typeof value === "object" && value.$oid) return value.$oid;
+//   if (typeof value.toString === "function") return value.toString();
+//   return value;
+// };
+
+// const createPatientsBulk = async (req, res) => {
+//   try {
+//     const rawPatients = Array.isArray(req.body)
+//       ? req.body
+//       : req.body?.patients;
+
+//     if (!Array.isArray(rawPatients) || rawPatients.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Request body must be a non-empty array of patients",
+//       });
+//     }
+
+//     // Normalize each patient, unwrapping $oid on the doctor field
+//     const patients = rawPatients.map((p) => ({
+//       name: p.name,
+//       age: p.age,
+//       gender: p.gender,
+//       condition: p.condition,
+//       phone: p.phone,
+//       email: p.email,
+//       doctor: extractId(p.doctor),
+//     }));
+
+//     // Catch any doctor value that still isn't a valid 24-char ObjectId string
+//     const invalid = patients.filter(
+//       (p) => typeof p.doctor !== "string" || !/^[0-9a-fA-F]{24}$/.test(p.doctor),
+//     );
+//     if (invalid.length > 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `Invalid doctor id on ${invalid.length} patient(s): ${invalid
+//           .map((p) => p.name)
+//           .join(", ")}`,
+//       });
+//     }
+
+//     // 1. Validate all referenced doctors exist, in one query
+//     const doctorIds = [...new Set(patients.map((p) => p.doctor))];
+//     const doctors = await Doctor.find({ _id: { $in: doctorIds } });
+
+//     const foundIds = new Set(doctors.map((d) => d._id.toString()));
+//     const missingIds = doctorIds.filter((id) => !foundIds.has(id));
+
+//     if (missingIds.length > 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: `Doctor(s) not found: ${missingIds.join(", ")}`,
+//       });
+//     }
+
+//     // 2. Create all patients in one insert
+//     const createdPatients = await Patient.insertMany(patients, {
+//       ordered: false,
+//     });
+
+//     // 3. Group new patient ids by doctor, then bulk update each doctor once
+//     const patientsByDoctor = {};
+//     createdPatients.forEach((p) => {
+//       const docId = p.doctor.toString();
+//       if (!patientsByDoctor[docId]) patientsByDoctor[docId] = [];
+//       patientsByDoctor[docId].push(p._id);
+//     });
+
+//     const bulkOps = Object.entries(patientsByDoctor).map(
+//       ([docId, patientIds]) => ({
+//         updateOne: {
+//           filter: { _id: docId },
+//           update: { $push: { patients: { $each: patientIds } } },
+//         },
+//       }),
+//     );
+
+//     if (bulkOps.length > 0) {
+//       await Doctor.bulkWrite(bulkOps);
+//     }
+
+//     return res.status(201).json({
+//       success: true,
+//       count: createdPatients.length,
+//       data: createdPatients,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(400).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
 const getPatients = async (req, res) => {
   try {
@@ -205,6 +305,7 @@ const deletePatient = async (req, res) => {
 
 module.exports = {
   createPatient,
+  // createPatientsBulk,
   getPatients,
   getPatient,
   updatePatient,

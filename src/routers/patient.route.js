@@ -2,6 +2,7 @@ const express = require("express");
 
 const {
   createPatient,
+  // createPatientsBulk,
   getPatients,
   getPatient,
   updatePatient,
@@ -16,6 +17,7 @@ router.get("/:id", getPatient);
 
 // post router
 router.post("/", createPatient);
+// router.post("/bulk", createPatientsBulk);
 
 // update routers
 router.put("/:id", updatePatient);
