@@ -2,6 +2,13 @@ const { getAuth } = require("firebase-admin/auth");
 const firebaseApp = require("../config/firebase-admin");
 
 const protect = async (req, res, next) => {
+  if (!firebaseApp) {
+    return res.status(503).json({
+      success: false,
+      message: "Firebase authentication is not configured",
+    });
+  }
+
   try {
     const authHeader = req.headers.authorization;
 
